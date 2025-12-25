@@ -2,16 +2,19 @@ import tkinter as tk
 from tkinter import ttk, scrolledtext, messagebox, filedialog
 import chordGen
 
-
 def generate_chords():
     global chords
-    length = dropdown_var.get()
-    lengthTable = { "Short" : 4,
-                   "Medium" : 6,
-                   "Long" : 8,
+    length = length_var.get()
+    mode = mode_var.get()
+    
+    lengthTable = { 
+        "Short": 4,
+        "Medium": 6,
+        "Long": 8,
     }
+    
     numChords = lengthTable[length]
-    chords = chordGen.genChords(numChords)
+    chords = chordGen.genChords(numChords, mode=mode.lower())  
     
     text_box.config(state=tk.NORMAL)
     text_box.delete(1.0, tk.END)
@@ -42,8 +45,8 @@ def export_to_midi():
 
 
 root = tk.Tk()
-root.title("Major Chord Generator")
-root.geometry("500x150")
+root.title("Chord Generator")
+root.geometry("500x180")  # increased height to fit new dropdown
 
 top_frame = tk.Frame(root)
 top_frame.pack(pady=10)
@@ -51,15 +54,23 @@ top_frame.pack(pady=10)
 length_label = tk.Label(top_frame, text="Length:")
 length_label.pack(side=tk.LEFT, padx=5)
 
-dropdown_var = tk.StringVar()
-dropdown_options = ["Short", "Medium", "Long"]
-dropdown_menu = ttk.Combobox(top_frame, textvariable=dropdown_var, values=dropdown_options, width=5)
-dropdown_menu.current(0)
-dropdown_menu.pack(side=tk.LEFT, padx=5)
+length_var = tk.StringVar()
+length_options = ["Short", "Medium", "Long"]
+length_menu = ttk.Combobox(top_frame, textvariable=length_var, values=length_options, width=5)
+length_menu.current(0)
+length_menu.pack(side=tk.LEFT, padx=5)
+
+mode_label = tk.Label(top_frame, text="Mode:")
+mode_label.pack(side=tk.LEFT, padx=5)
+
+mode_var = tk.StringVar()
+mode_options = ["Major", "Minor"]
+mode_menu = ttk.Combobox(top_frame, textvariable=mode_var, values=mode_options, width=5)
+mode_menu.current(0)
+mode_menu.pack(side=tk.LEFT, padx=5)
 
 generate_button = tk.Button(top_frame, text="Generate", command=generate_chords)
 generate_button.pack(side=tk.LEFT, padx=10)
-
 text_box = scrolledtext.ScrolledText(root, width=50, height=2, state=tk.DISABLED)
 text_box.pack(pady=10)
 

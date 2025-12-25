@@ -3,9 +3,10 @@ import pygame.midi
 import time
 from mido import Message, MidiFile, MidiTrack
 
-def genChords(length):
+def genChords( length, mode):
 
-    transitionTable = {
+
+    majorTable = {
         'I' : {"V6": 15, "V64 I6": 5, "V": 10,
             "IV": 20, "IV64 I" : 5, "IV6": 5,
                 "ii" : 10, "ii6" : 10,
@@ -28,12 +29,47 @@ def genChords(length):
         'V6' : {"I" : 100},
 
         'vi' : {"IV" : 30, "ii" : 50, "I": 5, "V": 15 }
-        
-
     }
 
+    minorTable = {
+            'i' : {"V6": 15, "V64 i6": 5, "V": 10,
+                "iv": 20, "iv64 i" : 5, "iv6": 5,
+                    "iio" : 10, "iio6" : 10,
+                    "VI" : 5,
+                    "VII" : 5,
+                    "v6" : 5},
+            'i6' : {"V64 i" : 5, "V": 10,
+                    "iv": 45,
+                    "iio": 10, "iio6": 25,
+                    "vii06 i": 5},
+            
+            'iio' : {"V" : 90, "i6 iio6" : 10},
+            'iio6' : {"V" : 90, "i6 iio" : 10},
+
+            'III': {"iv" : 80, "iio6" : 20},
+
+            'iv' : {"i" : 20, "i6" : 20, "V" : 40, "iio" : 15, "iio6" : 5},
+            'iv6' : {"i" : 10, "V" : 40, "V6": 30, "iio6" : 15, "iio": 5},
+
+            'V' : {"i" : 80, "i6": 10, "VI" : 10},
+            'V6' : {"i" : 100},
+
+            'VI' : {"iv" : 30, "iio" : 50, "i": 5, "V": 15 },
+
+            'v6' : {"iv6" : 80, "VI" : 20},
+            'VII' : {"III" : 90, "VI" : 10}
+            }
+
     numChords = length
-    chords = "I"
+
+
+    if mode == "major":
+        transitionTable = majorTable
+        chords = "I"
+    else:
+
+        transitionTable = minorTable
+        chords = 'i'
     last = chords
     for i in range(numChords + 1):
         previous = chords.split()[-1]
@@ -42,7 +78,7 @@ def genChords(length):
         chords += " " + next
         last = next
 
-    while(last != 'I'):
+    while(last != 'I' and last != 'i'):
         previous = chords.split()[-1]
         options = transitionTable[previous]
         next = random.choices(list(options.keys()), weights = list(options.values()))[0]
@@ -58,22 +94,34 @@ player = pygame.midi.Output(0)
 player.set_instrument(2)
 velocity = 127
 
-def playChords(chords):
+def playChords(chords): 
     midiTable = {
         'I' : [48, 64, 67, 72],
         'I6' : [52, 60, 67, 72],
         'ii' : [50, 62, 65, 69],
         'ii6' : [53, 62, 65, 69],
-        'iii' : [52, 60, 67, 71],
-        'iii64' : [47, 60, 67, 71],
+        'iii' : [52, 59, 67, 71],
+        'iii64' : [47, 59, 67, 71],
         'IV' : [53, 65, 69, 72],
         'IV6' : [45, 65, 69, 72],
         'IV64' : [48, 65, 69, 72],
         'V' : [55, 62, 67, 71],
         'V6' : [47, 62, 67, 71],
         'V64' : [50, 62, 67, 71],
-        "vi" : [45, 64, 69, 72],
-        "vii06" : [50, 62, 65, 71]
+        'vi' : [45, 64, 69, 72],
+        'vii06' : [50, 62, 65, 71],
+
+        'i' : [48, 63, 67, 72],
+        'i6' : [51, 63, 67, 72],
+        'iio' : [50, 62, 65, 68],
+        'iio6' : [53, 62, 65, 68],
+        'III' : [51, 58, 67, 70],
+        'iv' : [53, 65, 68, 72],
+        'iv6' : [44, 65, 68, 72],
+        'iv64' : [48, 65, 68, 72],
+        'VI' : [44, 63, 68, 72],
+        'VII' : [46, 62, 65, 70],
+        'v6' : [46, 62, 67, 70]
     }
 
     chords = chords.split()
@@ -95,8 +143,8 @@ def writeMIDI(filename, chords):
         'I6' : [52, 60, 67, 72],
         'ii' : [50, 62, 65, 69],
         'ii6' : [53, 62, 65, 69],
-        'iii' : [52, 60, 67, 71],
-        'iii64' : [47, 60, 67, 71],
+        'iii' : [52, 59, 67, 71],
+        'iii64' : [47, 59, 67, 71],
         'IV' : [53, 65, 69, 72],
         'IV6' : [45, 65, 69, 72],
         'IV64' : [48, 65, 69, 72],
@@ -104,7 +152,19 @@ def writeMIDI(filename, chords):
         'V6' : [47, 62, 67, 71],
         'V64' : [50, 62, 67, 71],
         "vi" : [45, 64, 69, 72],
-        "vii06" : [50, 62, 65, 71]
+        "vii06" : [50, 62, 65, 71],
+
+        'i' : [48, 63, 67, 72],
+        'i6' : [51, 63, 67, 72],
+        'iio' : [50, 62, 65, 68],
+        'iio6' : [53, 62, 65, 68],
+        'III' : [51, 58, 67, 70],
+        'iv' : [53, 65, 68, 72],
+        'iv6' : [44, 65, 68, 72],
+        'iv64' : [48, 65, 68, 72],
+        "VI" : [44, 64, 68, 72],
+        "VII" : [46, 62, 65, 70],
+        "v6" : [46, 62, 67, 70]
     }
 
     mid = MidiFile()
